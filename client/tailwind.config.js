@@ -3,7 +3,7 @@ module.exports = {
   darkMode: false, // or 'media' or 'class'
   theme: {
     fontFamily: {
-      sans: ['Varela Round', 'sans-serif'],
+      sans: ['Inter', 'sans-serif'],
       mono: ['Inconsolata', 'monospace']
     },
     extend: {
@@ -18,5 +18,5 @@ module.exports = {
   variants: {
     extend: {}
   },
-  plugins: []
+  plugins: [require('@tailwindcss/forms')]
 }
