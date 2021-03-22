@@ -1,3 +1,4 @@
+import LoginButton from 'components/LoginButton'
 
 const MenuBar = () => {
   return (
@@ -6,7 +7,7 @@ const MenuBar = () => {
       <div className="flex w-full justify-end space-x-4 font-bold">
         <div>Dashboard</div>
         <div>Settings</div>
-        <div>Login</div>
+        <LoginButton />
       </div>
     </div>
   )
