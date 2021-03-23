@@ -7,6 +7,17 @@ import useRequest from 'hooks/useRequest'
 const LoginButton = () => {
   const [session, loading] = useSession()
 
+  useEffect(() => {
+    if (session) {
+      const fetchData = async () => {
+        const projects = await axios({ url: 'http://localhost:5000/', headers: { Authorization: `Bearer ${session.accessToken}` } })
+        console.log(projects)
+      }
+
+      fetchData()
+    }
+  }, [session])
+
   return (
     <>
     {!session && (
