@@ -1,12 +1,21 @@
-import openSignInWindow from 'util/open-popup'
-import { useEffect } from 'react'
+import { signIn, signOut, useSession } from 'next-auth/client'
+import { useEffect, useState } from 'react'
+import axios from 'axios/axios'
+
+import useRequest from 'hooks/useRequest'
 
 const LoginButton = () => {
-  const clickHandler = () => {
-    openSignInWindow(`https://gitlab.lnu.se/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GL_APP_ID}&redirect_uri=${process.env.NEXT_PUBLIC_GL_REDIRECT}&response_type=code&state=${Math.random().toString(36).substr(2, 5)}&scope=api`, 'login-popup')
-  }
+  const [session, loading] = useSession()
+
   return (
-    <a className='cursor-pointer' onClick={clickHandler}>Login with Gitlab</a>
+    <>
+    {!session && (
+      <a className='cursor-pointer' onClick={() => signIn()}>Login with Gitlab</a>
+    )}
+    {session && (
+      <a className='cursor-pointer' onClick={() => signOut()}>Hej {session.user.name}</a>
+    )}
+    </>
   )
 }
 
