@@ -17,8 +17,10 @@ gitlabController.groupList = async (req, res) => {
     const response = await axios.get(`/groups?page=${page}&per_page=${perPage}`)
 
     const groups = response.data
-    res.render('repos/index', { groups })
+    res.json(groups)
   } catch (e) {
     res.status(400).send(e.errors)
   }
 }
+
+export default gitlabController

@@ -10,7 +10,7 @@ const GroupList = () => {
   useEffect(() => {
     if (session) {
       const fetchData = async () => {
-        const projects = await axios({ url: '/groups', headers: { Authorization: `Bearer ${session.gitlabToken}` } })
+        const projects = await axios({ url: '/groups' })
         console.log(projects)
       }
 

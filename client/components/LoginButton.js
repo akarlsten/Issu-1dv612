@@ -1,5 +1,7 @@
 import { signIn, signOut, useSession } from 'next-auth/client'
 import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+
 import axios from 'axios/axios'
 
 import useRequest from 'hooks/useRequest'
@@ -7,16 +9,31 @@ import useRequest from 'hooks/useRequest'
 const LoginButton = () => {
   const [session, loading] = useSession()
 
-  useEffect(() => {
-    if (session) {
-      const fetchData = async () => {
-        const projects = await axios({ url: 'http://localhost:5000/', headers: { Authorization: `Bearer ${session.accessToken}` } })
-        console.log(projects)
-      }
+  const { data, error } = useSWR(['gitlab/groups', session?.accessToken])
 
-      fetchData()
-    }
-  }, [session])
+  useEffect(() => {
+    console.log(data)
+  }, [data])
+
+  // useEffect(() => {
+  //   if (session) {
+  //     axios.interceptors.request.use(request => {
+  //       request.headers.Authorization = `Bearer ${session.accessToken}`
+  //       return request
+  //     })
+  //   }
+  // }, [session])
+
+  // useEffect(() => {
+  //   if (session) {
+  //     const fetchData = async () => {
+  //       const projects = await axios({ url: '/gitlab/groups' })
+  //       console.log(projects)
+  //     }
+
+  //     fetchData()
+  //   }
+  // }, [session])
 
   return (
     <>

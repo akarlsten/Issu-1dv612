@@ -17,7 +17,7 @@ const authenticated = async (req, res, next) => {
       const session = await Session.findByToken(trimmedToken)
 
       if (!session) {
-        return Promise.reject(new Error('Invalid credentials!'))
+        throw new Error('Invalid credentials!')
       }
 
       const { accessToken } = await Account.findByUser(session.userId)

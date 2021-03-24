@@ -1,15 +1,12 @@
 import express from 'express'
 import cors from 'cors'
 import 'dotenv/config.js'
-import passport from 'passport'
-import GitLabStrategy from 'passport-gitlab2'
-import session from 'express-session'
-import mongoose from 'mongoose'
-import MongoStore from 'connect-mongo'
 
 import authenticated from './middleware/authenticated.js'
 
 import Account from './models/account.js'
+
+import gitlabRouter from './router/gitlabRouter.js'
 
 import connectToDB from './db/mongoose.js'
 
@@ -29,6 +26,8 @@ app.get('/', authenticated, async (req, res) => {
   const { accessToken } = await Account.findOne({ userId: req.user })
   res.json({ hello: `${accessToken}` })
 })
+
+app.use('/gitlab', gitlabRouter)
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}!`)
