@@ -1,7 +1,4 @@
 import Head from 'next/head'
-
-import Sidebar from 'components/Sidebar'
-import Container from 'components/Container'
 import { SWRConfig } from 'swr'
 import { useSession } from 'next-auth/client'
 import { useEffect, useState } from 'react'
@@ -9,8 +6,13 @@ import { useEffect, useState } from 'react'
 import axios from 'axios/axios'
 
 import MenuBar from 'components/MenuBar'
+import Sidebar from 'components/Sidebar'
+import Container from 'components/Container'
+import Landing from 'components/Landing'
 
 export default function Home () {
+  const [session, loading] = useSession()
+
   const SWROptions = {
     fetcher: (url, token) => axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data)
   }
@@ -26,8 +28,17 @@ export default function Home () {
       <div className="flex flex-col">
         <MenuBar />
         <main className="flex">
-          <Sidebar />
-          <Container />
+          {session
+            ? (
+            <>
+              <Sidebar />
+              <Container />
+            </>
+              )
+            : (
+            <Landing />
+              )}
+
         </main>
       </div>
     </div>
