@@ -1,8 +1,11 @@
+import http from 'http'
 import express from 'express'
+import { Server } from 'socket.io'
 import cors from 'cors'
 import 'dotenv/config.js'
 
 import authenticated from './middleware/authenticated.js'
+import ioAuthenticated from './middleware/ioAuthenticated.js'
 
 import Account from './models/account.js'
 
@@ -11,6 +14,8 @@ import gitlabRouter from './router/gitlabRouter.js'
 import connectToDB from './db/mongoose.js'
 
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server, { cors: { origin: '*' } })
 const port = process.env.PORT || 5000
 
 app.use(express.json())
@@ -29,7 +34,13 @@ app.get('/', authenticated, async (req, res) => {
 
 app.use('/gitlab', gitlabRouter)
 
-app.listen(port, () => {
+io.use(ioAuthenticated)
+
+io.on('connection', (socket) => {
+  console.log('hello', socket.handshake.auth)
+})
+
+server.listen(port, () => {
   console.log(`Server started on port ${port}!`)
 })
 
