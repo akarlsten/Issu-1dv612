@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String },
   image: { type: String },
   createdAt: { type: Date },
-  updatedAt: { type: Date }
+  updatedAt: { type: Date },
+  phoneNumber: { type: String }
 })
 
 const User = mongoose.model('User', userSchema)
