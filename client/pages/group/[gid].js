@@ -1,23 +1,47 @@
 import useSWR from 'swr'
-import { useEffect } from 'react'
-
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { getSession, useSession } from 'next-auth/client'
 
 import LoadingSpinner from 'components/LoadingSpinner'
 import NotificationSettings from 'components/NotificationSettings'
+import ProjectItem from 'components/ProjectItem'
 
 const Group = () => {
+  const [maxPages, setMaxPages] = useState(1)
+  const [pageIndex, setPageIndex] = useState(1)
+
   const router = useRouter()
   const { gid } = router.query
 
   const [session, loading] = useSession()
 
-  const { data, error, loadingProjects } = useSWR([`gitlab/groups/${gid}/projects?&per_page=100`, session?.accessToken])
+  const { data: projects } = useSWR([`gitlab/groups/${gid}/projects?per_page=100`, session?.accessToken])
+  const { data, error, loadingProjects } = useSWR([`gitlab/groups/${gid}/projects?page=${pageIndex}&per_page=5`, session?.accessToken])
 
   useEffect(() => {
-    console.log(data)
-  }, [data])
+    if (projects) {
+      if (projects?.length < 100) {
+        setMaxPages(Math.ceil(projects?.length / 5))
+      } else {
+        setMaxPages('20+')
+      }
+    }
+  }, [projects])
+
+  const handleIncrement = () => {
+    setPageIndex(pageIndex + 1)
+  }
+
+  const handleDecrement = () => {
+    const newPage = pageIndex - 1 >= 1 ? pageIndex - 1 : 1
+
+    setPageIndex(newPage)
+  }
+
+  if (error) {
+    return <p className="text-2xl font-light">We couldn't fetch this group - do you have access? 😥</p>
+  }
 
   if (loadingProjects || !data) return <LoadingSpinner />
 
@@ -27,19 +51,19 @@ const Group = () => {
         ? (
         <>
           <p className="text-2xl font-bold">Projects for {data[0]?.namespace?.name}</p>
-          <div className="flex">
+          <div className="flex flex-wrap">
           {data.map(project =>
-            <div key={project.id} className="w-64 bg-blue-100 rounded-lg p-2 flex flex-col">
-              <div className="flex place-content-between items-center mb-2">
-                <a href={project.web_url} target="_blank" rel="noreferrer" className="font-semibold text-xl hover:text-blue-700">{project.name}</a>
-                <p className="font-bold text-xs">⭐ {project.star_count}</p>
-              </div>
-              <div className="font-bold text-xs">
-                <p>Issues: {project.open_issues_count}</p>
-                <p>Forks: {project.forks_count}</p>
-              </div>
-            </div>
+            <ProjectItem key={project.id} project={project} />
           )}
+          </div>
+            <div className="flex mt-4">
+              {pageIndex > 1 && (
+                <button onClick={handleDecrement} className="font-bold text-base p-2 mr-2 bg-blue-200">Previous</button>
+              )}
+              {pageIndex < maxPages && (
+                <button onClick={handleIncrement} className="font-bold text-base p-2 bg-blue-200 mr-2">Next</button>
+              )}
+              <p className="font-bold text-sm py-2">Page {pageIndex}/{maxPages}</p>
             </div>
         </>
           )

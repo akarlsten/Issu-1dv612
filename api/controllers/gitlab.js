@@ -1,8 +1,11 @@
 import { v4 as uuid } from 'uuid'
+import sub from 'date-fns/sub/index.js'
 
 import axios from '../axios/axios.js'
 
 import Hook from '../models/hook.js'
+import Event from '../models/event.js'
+import User from '../models/user.js'
 
 const gitlabController = {}
 
@@ -53,20 +56,14 @@ gitlabController.projectList = async (req, res) => {
   }
 }
 
-gitlabController.getHooks = async (req, res) => {
+gitlabController.getHook = async (req, res) => {
   try {
-    const id = req.params.id
+    const groupId = req.params.id
+    const userId = req.user._id
 
-    const response = await axios.get(`/groups/${id}/hooks`)
+    const hook = await Hook.findOne({ owner: userId, group: groupId })
 
-    const hooks = response.data.filter(hook => {
-      const splitUrl = hook.url.split('/')
-      const hookUserId = splitUrl[splitUrl.length - 1]
-
-      return req.user._id === hookUserId
-    })
-
-    res.json(hooks)
+    res.json(hook)
   } catch (e) {
     res.status(400).send(e.errors)
   }
@@ -77,13 +74,28 @@ gitlabController.createHook = async (req, res) => {
     const groupId = req.params.id
     const userId = req.user._id
     const hookSecret = uuid()
-    const hookURL = `${process.env.APP_BASE_URL}/hooks/${groupId}/${userId}`
+    const hookURL = `${process.env.APP_BASE_URL}/gitlab/hooks/${groupId}/${userId}`
+
+    // remove any existing hooks by this user first
+    const response = await axios.get(`/groups/${groupId}/hooks`)
+
+    const hooks = response.data.filter(item => {
+      const splitUrl = item.url.split('/')
+      const hookUserId = splitUrl[splitUrl.length - 1]
+
+      return `${req.user._id}` === `${hookUserId}`
+    })
+
+    if (hooks[0]) {
+      await axios.delete(`/groups/${groupId}/hooks/${hooks[0].id}`)
+      await Hook.findOneAndDelete({ owner: userId, group: groupId })
+    }
 
     const hook = {
       owner: userId,
       group: groupId,
       url: hookURL,
-      hookSecret: hookSecret,
+      token: hookSecret,
       pushEvents: req?.body?.pushEvents,
       issuesEvents: req?.body?.issuesEvents,
       mergeEvents: req?.body?.mergeEvents,
@@ -103,14 +115,43 @@ gitlabController.createHook = async (req, res) => {
       url: hookURL,
       push_events: req?.body?.pushEvents || false,
       issues_events: req?.body?.issuesEvents || false,
-      merge_events: req?.body?.mergeEvents || false,
+      merge_requests_events: req?.body?.mergeEvents || false,
       note_events: req?.body?.noteEvents || false,
       job_events: req?.body?.jobEvents || false,
       deployment_events: req?.body?.deploymentEvents || false,
-      release_events: req?.body?.releaseEvents || false,
+      releases_events: req?.body?.releaseEvents || false,
       subgroup_events: req?.body?.subgroupEvents || false,
-      token: hookSecret
+      token: hookSecret,
+      enable_ssl_verification: false
     })
+
+    return res.status(200).send()
+  } catch (e) {
+    res.status(400).send(e.errors)
+  }
+}
+
+gitlabController.removeHook = async (req, res) => {
+  try {
+    const groupId = req.params.id
+    const userId = req.user._id
+
+    // remove any existing hooks by this user first
+    const response = await axios.get(`/groups/${groupId}/hooks`)
+
+    const hooks = response.data.filter(item => {
+      const splitUrl = item.url.split('/')
+      const hookUserId = splitUrl[splitUrl.length - 1]
+
+      return `${req.user._id}` === `${hookUserId}`
+    })
+
+    if (hooks[0]) {
+      await axios.delete(`/groups/${groupId}/hooks/${hooks[0].id}`)
+      await Hook.findOneAndDelete({ owner: userId, group: groupId })
+    }
+
+    return res.status(200).send()
   } catch (e) {
     res.status(400).send(e.errors)
   }
@@ -123,33 +164,59 @@ gitlabController.receiveHook = async (req, res) => {
     const token = req.header('X-Gitlab-Token') || null
 
     // retrieve this projects stored hook token
-    const { hookSecret } = await Hook.findOne({ owner: userId, group: groupId })
+    const { token: hookSecret } = await Hook.findOne({ owner: userId, group: groupId })
 
     if (token === hookSecret) {
-      console.log(req.body)
+      const event = await Event.create(
+        { owner: userId, group: groupId, data: req.body }
+      )
+
       const io = res.locals.io.to(`/${userId}`)
 
-      const issueData = {
-        creator: req.body.user,
-        info: req.body.object_attributes
-      }
-
-      if (req.body.object_attributes.action === 'open') {
-        // emit the issue info to clients connected to the right path
-        io.emit('newIssue', issueData)
-      } else if (req.body.object_attributes.action === 'close') {
-        io.emit('closedIssue', issueData)
-      } else if (req.body.object_attributes.action === 'reopen') {
-        io.emit('reopenIssue', issueData)
-      } else if (req.body.event_type === 'note') {
-        io.emit('newNote', { ...issueData, issue: req.body.issue })
-      } else {
-        io.emit('changedIssue', issueData)
-      }
+      io.emit('newEvent', event)
 
       return res.status(200).send()
     }
   } catch (e) {
+    console.log(e)
+    res.status(400).send(e.errors)
+  }
+}
+
+gitlabController.getEvents = async (req, res) => {
+  try {
+    const userId = req.user._id
+    let page = 1
+    let perPage = 10
+
+    if (req.query.page) {
+      page = req.query.page
+    }
+    if (req.query.per_page) {
+      perPage = req.query.per_page
+    }
+
+    const now = Date.now()
+
+    const events = await Event.find({
+      owner: userId,
+      createdAt: { $gte: sub(now, { weeks: 1 }) }
+    })
+      .skip((page - 1) * perPage)
+      .limit(+perPage)
+      .sort({ createdAt: -1 })
+
+    await User.findOneAndUpdate({
+      _id: req.user._id
+    }, {
+      $set: {
+        lastVisited: now
+      }
+    })
+
+    return res.json(events)
+  } catch (e) {
+    console.log(e)
     res.status(400).send(e.errors)
   }
 }

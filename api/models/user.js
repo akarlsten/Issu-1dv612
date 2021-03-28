@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   image: { type: String },
   createdAt: { type: Date },
   updatedAt: { type: Date },
-  phoneNumber: { type: String }
+  phoneNumber: { type: String },
+  lastVisited: { type: Date }
 })
 
 const User = mongoose.model('User', userSchema)

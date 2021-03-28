@@ -1,5 +1,5 @@
 import useSWR, { mutate } from 'swr'
-import { useSession } from 'next-auth/client'
+import { useSession, getSession } from 'next-auth/client'
 import { useState, useEffect } from 'react'
 
 import axios from 'axios/axios'
@@ -19,7 +19,6 @@ const Settings = () => {
   const handleSubmit = async (e) => {
     try {
       e.preventDefault()
-      console.log(phoneNumber)
       const user = await axios.post('/me', { phoneNumber: phoneNumber }, { headers: { Authorization: `Bearer ${session.accessToken}` } })
       if (user) {
         mutate(['me', session?.accessToken])
@@ -35,7 +34,6 @@ const Settings = () => {
         <div className="flex items-center">
           <div className="flex flex-col items-center">
               <img loading="lazy" className={'w-32 h-32 border border-blue-200 rounded-full'} src={data?.image} alt="" />
-              <p className="font-bold text-xs">Gitlab Avatar</p>
           </div>
           <div className="ml-8">
             <p className="font-bold">Name</p>
@@ -55,6 +53,11 @@ const Settings = () => {
     </div>
     </PleaseSignIn>
   )
+}
+
+export async function getServerSideProps (ctx) {
+  const session = await getSession(ctx)
+  return ({ props: { session } })
 }
 
 export default Settings

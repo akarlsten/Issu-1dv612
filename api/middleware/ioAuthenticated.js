@@ -3,7 +3,7 @@ import Session from '../models/session.js'
 // variation of auth middleware for socketio
 const authenticated = async (socket, next) => {
   try {
-    const token = socket?.auth
+    const token = socket?.handshake?.auth?.token
 
     if (!token) {
       next(new Error('No auth token found!'))

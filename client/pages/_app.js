@@ -1,8 +1,9 @@
 import React, { useState, useEffect, createContext } from 'react'
 import { Provider, useSession, getSession } from 'next-auth/client'
-import { io } from 'socket.io-client'
 import { SWRConfig } from 'swr'
-// import { SocketProvider, useSocket } from 'context/SocketContext'
+import { ToastProvider } from 'react-toast-notifications'
+
+import PleaseSignIn from 'components/PleaseSignIn'
 
 import axios from 'axios/axios'
 import '../styles/globals.css'
@@ -14,43 +15,24 @@ const SocketContextProvider = SocketContext.Provider
 
 function MyApp ({ Component, pageProps }) {
   const [socket, setSocket] = useState()
-  const session = pageProps.session
 
   const SWROptions = {
     fetcher: (url, token) => axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data)
   }
 
-  useEffect(() => {
-    if (session) {
-      const freshSocket = io.connect(process.env.NEXT_PUBLIC_API_URL, { auth: { token: session.accessToken } })
-      setSocket(freshSocket)
-    } else {
-      if (socket) {
-        socket.disconnect()
-        setSocket(undefined)
-      }
-    }
-    return () => {
-      if (socket) {
-        socket.disconnect()
-      }
-    }
-  }, [session])
-
-  // TODO: below is placeholder
-  useEffect(() => {
-    if (socket) {
-      socket.on('connect', () => console.log('what'))
-    }
-  }, [socket])
-
   return (
     <Provider session={pageProps.session}>
       <SocketContextProvider value={{ socket, setSocket }}>
         <SWRConfig value={SWROptions}>
-          <Page>
-            <Component {...pageProps} />
-          </Page>
+          <ToastProvider
+          autoDismiss
+          placement='top-center'>
+            <Page>
+              <PleaseSignIn>
+                <Component {...pageProps} />
+              </PleaseSignIn>
+            </Page>
+          </ToastProvider>
         </SWRConfig>
       </SocketContextProvider>
     </Provider>

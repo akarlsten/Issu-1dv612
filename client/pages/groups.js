@@ -1,6 +1,6 @@
 import { useSession, getSession } from 'next-auth/client'
 
-import Feed from 'components/Feed'
+import Container from 'components/Container'
 import Landing from 'components/Landing'
 
 export default function Home () {
@@ -8,15 +8,15 @@ export default function Home () {
 
   return (
     <>
-          {session
-            ? (
-            <>
-              <Feed />
-            </>
-              )
-            : (
-            <Landing />
-              )}
+      {session
+        ? (
+          <>
+            <Container />
+          </>
+          )
+        : (
+          <Landing />
+          )}
     </>
   )
 }

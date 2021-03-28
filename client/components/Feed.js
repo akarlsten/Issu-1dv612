@@ -3,25 +3,27 @@ import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 import LoadingSpinner from 'components/LoadingSpinner'
-import GroupItem from 'components/GroupItem'
+import FeedItem from 'components/FeedItem'
 
-const GroupList = () => {
+const Feed = () => {
   const [maxPages, setMaxPages] = useState(1)
   const [pageIndex, setPageIndex] = useState(1)
   const [session, loading] = useSession()
 
-  const { data: groups } = useSWR(['gitlab/groups?min_access_level=50&per_page=100', session?.accessToken])
-  const { data, error, loadingGroups } = useSWR([`gitlab/groups?min_access_level=50&page=${pageIndex}&per_page=5`, session?.accessToken])
+  const { data: user, userError, loadingUser } = useSWR(['me', session?.accessToken])
+  const { data: events } = useSWR(['gitlab/events?page=1&per_page=100', session?.accessToken])
+  const { data, error, loadingGroups } = useSWR([`gitlab/events?page=${pageIndex}&per_page=5`, session?.accessToken])
+  const { preloadData, preloadError, preloadingGroups } = useSWR([`gitlab/events?page=${pageIndex + 1}&per_page=5`, session?.accessToken])
 
   useEffect(() => {
-    if (groups) {
-      if (groups?.length < 100) {
-        setMaxPages(Math.ceil(groups.length / 5))
+    if (events) {
+      if (events?.length < 100) {
+        setMaxPages(Math.ceil(events.length / 5))
       } else {
         setMaxPages('20+')
       }
     }
-  }, [groups])
+  }, [events])
 
   const handleIncrement = () => {
     setPageIndex(pageIndex + 1)
@@ -33,17 +35,17 @@ const GroupList = () => {
     setPageIndex(newPage)
   }
 
-  if (loadingGroups || !data) return <LoadingSpinner />
+  if (loadingUser || loadingGroups) return <LoadingSpinner />
 
   return (
-    <div>
-      <p className="text-2xl font-bold mb-4">Groups</p>
-      <div className="space-y-4">
-      {data.map(group =>
-      <GroupItem key={group?.id} group={group} />
-      )}
+    <div className="w-full">
+      <p className="text-2xl font-bold mb-4">Feed</p>
+      <div className="flex flex-col justify-items-stretch">
+        {data?.map(event => (
+          <FeedItem key={event._id} event={event} user={user} />
+        ))}
       </div>
-      <div className="flex mt-4">
+      <div className="flex">
         {pageIndex > 1 && (
           <button onClick={handleDecrement} className="font-bold text-base p-2 mr-2 bg-blue-200">Previous</button>
         )}
@@ -51,10 +53,9 @@ const GroupList = () => {
           <button onClick={handleIncrement} className="font-bold text-base p-2 bg-blue-200 mr-2">Next</button>
         )}
         <p className="font-bold text-sm py-2">Page {pageIndex}/{maxPages}</p>
-        </div>
-      <p className="text-sm font-semibold mt-2">Only groups where you are a maintainer and have access to webhooks are visible.</p>
+      </div>
     </div>
   )
 }
 
-export default GroupList
+export default Feed

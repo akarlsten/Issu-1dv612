@@ -5,7 +5,7 @@ const GroupItem = ({ group }) => {
 
   return (
     <Link href={`/group/${group.id}`}>
-      <div className="cursor-pointer bg-blue-100 hover:bg-blue-200 rounded-lg p-2 flex flex-col">
+      <div className="cursor-pointer bg-blue-100 hover:bg-blue-200 p-2 flex flex-col">
         <p className="text-sm">{course}</p>
         <p className="text-xs">{path.join('/')}</p>
         <p className="font-semibold">{group.name}</p>

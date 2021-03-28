@@ -12,7 +12,8 @@ const hookSchema = new mongoose.Schema({
   jobEvents: { type: Boolean, default: false },
   deploymentEvents: { type: Boolean, default: false },
   releaseEvents: { type: Boolean, default: false },
-  subgroupEvents: { type: Boolean, default: false }
+  subgroupEvents: { type: Boolean, default: false },
+  hookId: { type: String }
 })
 
 const Hook = mongoose.model('Hook', hookSchema)
