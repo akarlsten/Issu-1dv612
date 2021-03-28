@@ -129,6 +129,7 @@ gitlabController.createHook = async (req, res) => {
 
     return res.status(200).send()
   } catch (e) {
+    console.log(e)
     res.status(400).send(e.errors)
   }
 }
@@ -184,8 +185,7 @@ gitlabController.receiveHook = async (req, res) => {
         const sms = querystring.stringify({
           from: 'ISSU',
           to: user.phoneNumber,
-          message: `New '${event?.data?.object_kind}' event in project: ${event?.data?.project?.name}!\n\nView on Gitlab: ${event?.data?.project?.web_url}`,
-          dryrun: 'yes'
+          message: `New '${event?.data?.object_kind}' event in project: ${event?.data?.project?.name}!\n\nView on Gitlab: ${event?.data?.project?.web_url}`
         })
 
         const response = await freshAxios.post('https://api.46elks.com/a1/SMS', sms, { auth: { username: `${process.env.SMS_USER}`, password: `${process.env.SMS_PW}` } })

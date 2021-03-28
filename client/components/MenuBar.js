@@ -18,18 +18,14 @@ const MenuBar = () => {
     if (session && !socket) {
       const freshSocket = io.connect(process.env.NEXT_PUBLIC_API_URL, { auth: { token: session.accessToken } })
       setSocket(freshSocket)
-    } else if (!session) {
-      if (socket) {
-        socket.disconnect()
-        setSocket(undefined)
-      }
     }
+
     return () => {
       if (socket) {
         socket.disconnect()
       }
     }
-  }, [session, socket])
+  }, [session])
 
   useEffect(() => {
     if (socket) {
