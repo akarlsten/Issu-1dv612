@@ -20,7 +20,6 @@ const MenuBar = () => {
       setSocket(freshSocket)
     } else if (!session) {
       if (socket) {
-        console.log('were doing this now')
         socket.disconnect()
         setSocket(undefined)
       }
@@ -30,7 +29,7 @@ const MenuBar = () => {
         socket.disconnect()
       }
     }
-  }, [session])
+  })
 
   useEffect(() => {
     if (socket) {

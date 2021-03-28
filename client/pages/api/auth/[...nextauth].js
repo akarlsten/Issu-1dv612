@@ -37,7 +37,6 @@ export default NextAuth({
   database: process.env.MONGODB_ATLAS,
   callbacks: {
     async session (session, token) {
-      console.log('sess', session)
       return session
     }
   },
