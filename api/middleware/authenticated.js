@@ -1,5 +1,6 @@
 import Session from '../models/session.js'
 import Account from '../models/account.js'
+import User from '../models/user.js'
 
 import axios from '../axios/axios.js'
 
@@ -21,8 +22,8 @@ const authenticated = async (req, res, next) => {
       }
 
       const { accessToken } = await Account.findByUser(session.userId)
-
-      req.user = session.userId
+      const user = await User.findOne({ _id: session.userId })
+      req.user = user
 
       if (req.user && accessToken) {
         // if logged in intercepts all axios requests and adds the authorization header with our access token

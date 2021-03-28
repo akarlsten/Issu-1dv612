@@ -6,10 +6,16 @@ const LoginButton = () => {
   return (
     <>
     {!session && (
-      <a className='cursor-pointer' onClick={() => signIn()}>Login with Gitlab</a>
+        <a className='cursor-pointer bg-blue-200 p-2 hover:bg-blue-500 hover:text-white' onClick={() => signIn()}>Login with Gitlab</a>
     )}
     {session && (
-      <a className='cursor-pointer' onClick={() => signOut()}>Hej {session.user.name}</a>
+      <div className="flex space-x-4 items-center">
+          <div className="flex items-center">
+            <img loading="lazy" className={'w-10 h-10 border border-blue-200 rounded-full'} src={session?.user?.image} alt="" />
+            <p className="ml-2 font-medium text-sm">{session?.user?.name}</p>
+          </div>
+          <a className='cursor-pointer bg-blue-200 p-2 hover:bg-blue-500 hover:text-white' onClick={() => signOut()}>Logout</a>
+      </div>
     )}
     </>
   )

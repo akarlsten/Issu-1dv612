@@ -10,28 +10,17 @@ export default function Home () {
   const [session, loading] = useSession()
 
   return (
-    <div className="mx-auto container flex flex-col h-full bg-white p-4 m-4">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <div className="flex flex-col">
-        <MenuBar />
-        <main className="flex">
+    <>
           {session
             ? (
             <>
-              <Sidebar />
               <Container />
             </>
               )
             : (
             <Landing />
               )}
-        </main>
-      </div>
-    </div>
+    </>
   )
 }
 

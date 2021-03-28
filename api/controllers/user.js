@@ -1,21 +1,20 @@
-import User from '../models/user'
+import User from '../models/user.js'
 import mongoose from 'mongoose'
 
 const userController = {}
 
 userController.setNumber = async (req, res) => {
   try {
-    const userId = req.params.id
     const { phoneNumber } = req?.body
-
-    if (!mongoose.Schema.Types.ObjectId.isValid(userId)) {
+    console.log(phoneNumber)
+    if (!req.user) {
       return res.status(400).send({
         errormessage: 'Invalid ID'
       })
     }
 
-    const user = User.findOneAndUpdate({
-      _id: userId
+    const user = await User.findOneAndUpdate({
+      _id: req.user._id
     }, {
       $set: {
         phoneNumber
@@ -29,6 +28,15 @@ userController.setNumber = async (req, res) => {
     }
 
     res.json(user)
+  } catch (e) {
+    console.log(e)
+    res.status(400).send(e.errors)
+  }
+}
+
+userController.getUser = async (req, res) => {
+  try {
+    res.json(req.user)
   } catch (e) {
     res.status(400).send(e.errors)
   }

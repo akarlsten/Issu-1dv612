@@ -1,9 +1,14 @@
-import { useSession, signIn } from 'next-auth/client'
+import { useSession } from 'next-auth/client'
+
+import Landing from 'components/Landing'
 
 function PleaseSignIn ({ children }) {
   const [session, loading] = useSession()
-  // TODO Loading..
-  if (!session) return signIn()
+
+  if (!session) {
+    return <Landing />
+  }
+
   return children
 }
 

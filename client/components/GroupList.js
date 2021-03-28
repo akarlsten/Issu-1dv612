@@ -16,13 +16,13 @@ const GroupList = () => {
 
   if (loadingGroups || !data) return <LoadingSpinner />
 
-  console.log(data)
   return (
     <div className="space-y-4">
+      <p className="text-2xl font-bold">Groups</p>
       {data.map(group =>
       <GroupItem key={group?.id} group={group} />
       )}
-      <p className="text-sm font-semibold">Only repositories where you are a maintainer and have access to webhooks are visible.</p>
+      <p className="text-sm font-semibold">Only groups where you are a maintainer and have access to webhooks are visible.</p>
     </div>
   )
 }

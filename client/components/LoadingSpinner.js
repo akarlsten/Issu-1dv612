@@ -1,6 +1,6 @@
 const LoadingSpinner = () => {
   return (
-    <div className="LoadingSpinner">
+    <div className="LoadingSpinner w-full">
       <div className="lds-ripple">
         <div></div>
         <div></div>

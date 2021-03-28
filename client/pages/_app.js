@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react'
+import React, { useState, useEffect, createContext } from 'react'
 import { Provider, useSession, getSession } from 'next-auth/client'
 import { io } from 'socket.io-client'
 import { SWRConfig } from 'swr'
@@ -6,6 +6,8 @@ import { SWRConfig } from 'swr'
 
 import axios from 'axios/axios'
 import '../styles/globals.css'
+
+import Page from 'components/Page'
 
 const SocketContext = createContext()
 const SocketContextProvider = SocketContext.Provider
@@ -46,7 +48,9 @@ function MyApp ({ Component, pageProps }) {
     <Provider session={pageProps.session}>
       <SocketContextProvider value={{ socket, setSocket }}>
         <SWRConfig value={SWROptions}>
+          <Page>
             <Component {...pageProps} />
+          </Page>
         </SWRConfig>
       </SocketContextProvider>
     </Provider>
