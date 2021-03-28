@@ -29,7 +29,7 @@ const MenuBar = () => {
         socket.disconnect()
       }
     }
-  })
+  }, [session, socket])
 
   useEffect(() => {
     if (socket) {
