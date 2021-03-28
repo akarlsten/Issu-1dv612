@@ -1,7 +1,9 @@
 import { v4 as uuid } from 'uuid'
 import sub from 'date-fns/sub/index.js'
+import querystring from 'querystring'
 
 import axios from '../axios/axios.js'
+import freshAxios from 'axios'
 
 import Hook from '../models/hook.js'
 import Event from '../models/event.js'
@@ -174,6 +176,19 @@ gitlabController.receiveHook = async (req, res) => {
       const io = res.locals.io.to(`/${userId}`)
 
       io.emit('newEvent', event)
+
+      // send SMS
+      const user = await User.findOne({ _id: userId })
+
+      if (user?.phoneNumber) {
+        const sms = querystring.stringify({
+          from: 'ISSU',
+          to: user.phoneNumber,
+          message: `New '${event?.data?.object_kind}' event in project: ${event?.data?.project?.name}!\n\nView on Gitlab: ${event?.data?.project?.web_url}`
+        })
+
+        const response = await freshAxios.post('https://api.46elks.com/a1/SMS', sms, { auth: { username: `${process.env.SMS_USER}`, password: `${process.env.SMS_PW}` } })
+      }
 
       return res.status(200).send()
     }
