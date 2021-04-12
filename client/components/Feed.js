@@ -44,6 +44,9 @@ const Feed = () => {
         {data?.map(event => (
           <FeedItem key={event._id} event={event} user={user} />
         ))}
+        {!data && !loadingGroups && (
+          <p>No recent activity! Only the last 7 days are displayed.</p>
+        )}
       </div>
       <div className="flex">
         {pageIndex > 1 && (
